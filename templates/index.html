@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cuentas Fondeo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h2>Inserción de datos</h2>
+
+<form action="/guardar" method="POST">
+    <input name="usuario" placeholder="Usuario" required>
+    <input name="empresa" placeholder="Empresa" required>
+
+    <input type="number" step="0.01" name="monto_cta" placeholder="Monto cuenta">
+    <input type="number" step="0.01" name="saldo_inicial" placeholder="Saldo inicial">
+    <input type="number" step="0.01" name="saldo_final" placeholder="Saldo final">
+
+    <input type="number" name="trades_loss" placeholder="Trades loss">
+    <input type="number" step="0.01" name="monto_loss" placeholder="Monto loss">
+
+    <input type="number" name="trades_win" placeholder="Trades win">
+    <input type="number" step="0.01" name="monto_win" placeholder="Monto win">
+
+    <label>Fecha inicio</label>
+    <input type="date" name="fecha_inicio" required>
+
+    <label>Fecha fin</label>
+    <input type="date" name="fecha_fin" required>
+
+    <button type="submit">Guardar</button>
+</form>
+
+<h2>Registros</h2>
+
+<table>
+    <tr>
+        <th>Usuario</th>
+        <th>Empresa</th>
+        <th>Monto CTA</th>
+        <th>Saldo Inicial</th>
+        <th>Saldo Final</th>
+        <th>Loss</th>
+        <th>Win</th>
+        <th>Inicio</th>
+        <th>Fin</th>
+    </tr>
+
+    {% for r in registros %}
+    <tr>
+        <td>{{ r.usuario }}</td>
+        <td>{{ r.empresa }}</td>
+        <td>{{ r.monto_cta }}</td>
+        <td>{{ r.saldo_inicial }}</td>
+        <td>{{ r.saldo_final }}</td>
+        <td>{{ r.trades_loss }} | {{ r.monto_loss }}</td>
+        <td>{{ r.trades_win }} | {{ r.monto_win }}</td>
+        <td>{{ r.fecha_inicio }}</td>
+        <td>{{ r.fecha_fin }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

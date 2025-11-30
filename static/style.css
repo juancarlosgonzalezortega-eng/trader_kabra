@@ -1,0 +1,31 @@
+body {
+    background: #0f0f0f;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+form, table {
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px;
+}
+
+input, button {
+    background: #111;
+    color: white;
+    border: 1px solid #333;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+table {
+    width: 95%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #333;
+    padding: 8px;
+}

@@ -15,7 +15,7 @@ DISCORD_REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI")
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "supersecret123")
 
-ADMINS = ["juangno", "JKabraFX"]
+ADMINS = ["juangno6506", "JKabraFX"]
 
 def get_connection():
     return psycopg2.connect(DATABASE_URL, sslmode="require")

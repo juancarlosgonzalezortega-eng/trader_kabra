@@ -6,12 +6,13 @@
 </head>
 <body>
 
-<h3>Conectado como: {{ usuario }}</h3>
+<h1>Bienvenido, {{ usuario }}</h1>
 <a href="/logout">Cerrar sesión</a>
 
 <h2>Inserción de datos</h2>
 
 <form action="/guardar" method="POST">
+
     <input name="usuario" value="{{ usuario }}" readonly>
 
     <input name="empresa" placeholder="Empresa" required>
@@ -35,9 +36,11 @@
     <button type="submit">Guardar</button>
 </form>
 
+<hr>
+
 <h2>Registros</h2>
 
-<table>
+<table border="1">
     <tr>
         <th>Usuario</th>
         <th>Empresa</th>

@@ -2,8 +2,8 @@ from flask import Flask, render_template, request, redirect, session, url_for
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
-from dotenv import load_dotenv
 import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -13,31 +13,36 @@ DISCORD_CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
 DISCORD_REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI")
 
 app = Flask(__name__)
-app.secret_key = "super_secret_key_123"
+app.secret_key = os.getenv("SECRET_KEY", "supersecret123")
 
-ADMIN_USERS = ["juangno", "JKabraFX"]
+ADMINS = ["juangno", "JKabraFX"]
 
 def get_connection():
     return psycopg2.connect(DATABASE_URL, sslmode="require")
 
 
-### ---------- LOGIN DISCORD ----------
+# -----------------------------------------
+# LOGIN DISCORD
+# -----------------------------------------
+
 @app.route("/login")
 def login():
-    discord_auth_url = (
-        f"https://discord.com/api/oauth2/authorize"
+    discord_url = (
+        "https://discord.com/api/oauth2/authorize"
         f"?client_id={DISCORD_CLIENT_ID}"
+        "&response_type=code"
         f"&redirect_uri={DISCORD_REDIRECT_URI}"
-        f"&response_type=code"
-        f"&scope=identify email"
+        "&scope=identify email"
     )
-    return redirect(discord_auth_url)
+    return redirect(discord_url)
 
 
-### ---------- CALLBACK DISCORD ----------
 @app.route("/callback")
 def callback():
     code = request.args.get("code")
+
+    if not code:
+        return "Error: no se recibió código de Discord"
 
     data = {
         "client_id": DISCORD_CLIENT_ID,
@@ -48,52 +53,60 @@ def callback():
         "scope": "identify email"
     }
 
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
     r = requests.post("https://discord.com/api/oauth2/token", data=data, headers=headers)
-    r_json = r.json()
+    r.raise_for_status()
+    access_token = r.json()["access_token"]
 
-    access_token = r_json.get("access_token")
-
-    user_info = requests.get(
+    user_resp = requests.get(
         "https://discord.com/api/users/@me",
         headers={"Authorization": f"Bearer {access_token}"}
-    ).json()
+    )
 
-    session["user"] = {
-        "id": user_info["id"],
-        "username": user_info["username"],
-        "avatar": user_info["avatar"],
-        "email": user_info.get("email")
+    user_data = user_resp.json()
+
+    # Guardar en sesión
+    session["discord_user"] = {
+        "id": user_data["id"],
+        "username": user_data["username"],
+        "email": user_data.get("email"),
+        "avatar": user_data.get("avatar")
     }
 
     return redirect("/")
 
 
-### ---------- LOGOUT ----------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
 
-### ---------- INDEX ----------
-@app.route('/')
+# -----------------------------------------
+# HOME
+# -----------------------------------------
+
+@app.route("/")
 def index():
-    if "user" not in session:
+
+    user = session.get("discord_user")
+
+    if not user:
         return render_template("login.html")
 
-    user = session["user"]
     username = user["username"]
 
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    if username in ADMIN_USERS:
+    if username in ADMINS:
         cursor.execute("""
             SELECT 
-                id, usuario, empresa, monto_cta, saldo_inicial,
-                saldo_final, trades_loss, monto_loss,
-                trades_win, monto_win,
+                id, usuario, empresa, monto_cta, saldo_inicial, saldo_final,
+                trades_loss, monto_loss, trades_win, monto_win,
                 TO_CHAR(fecha_inicio,'DD/MM/YYYY') as fecha_inicio,
                 TO_CHAR(fecha_fin,'DD/MM/YYYY') as fecha_fin
             FROM cuentas_fondeo
@@ -102,9 +115,8 @@ def index():
     else:
         cursor.execute("""
             SELECT 
-                id, usuario, empresa, monto_cta, saldo_inicial,
-                saldo_final, trades_loss, monto_loss,
-                trades_win, monto_win,
+                id, usuario, empresa, monto_cta, saldo_inicial, saldo_final,
+                trades_loss, monto_loss, trades_win, monto_win,
                 TO_CHAR(fecha_inicio,'DD/MM/YYYY') as fecha_inicio,
                 TO_CHAR(fecha_fin,'DD/MM/YYYY') as fecha_fin
             FROM cuentas_fondeo
@@ -116,16 +128,22 @@ def index():
     cursor.close()
     conn.close()
 
-    return render_template('index.html', registros=data, usuario=username)
+    return render_template("index.html", registros=data, usuario=username)
 
 
-### ---------- GUARDAR ----------
+# -----------------------------------------
+# GUARDAR
+# -----------------------------------------
+
 @app.route('/guardar', methods=['POST'])
 def guardar():
-    if "user" not in session:
-        return redirect("/")
 
-    username = session["user"]["username"]
+    user = session.get("discord_user")
+
+    if not user:
+        return redirect("/login")
+
+    username = user["username"]
 
     datos = (
         username,
@@ -147,8 +165,8 @@ def guardar():
     cursor.execute("""
         INSERT INTO cuentas_fondeo
         (usuario, empresa, monto_cta, saldo_inicial, saldo_final, 
-         trades_loss, monto_loss, trades_win, monto_win, 
-         fecha_inicio, fecha_fin, fecha_actualizacion)
+        trades_loss, monto_loss, trades_win, monto_win, 
+        fecha_inicio, fecha_fin, fecha_actualizacion)
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, NOW())
     """, datos)
 
@@ -160,4 +178,4 @@ def guardar():
     
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

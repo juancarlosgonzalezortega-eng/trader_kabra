@@ -2,27 +2,48 @@
 <html>
 <head>
     <title>Login con Discord</title>
-    <style>
-        body {
-            display: flex;
-            height: 100vh;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial;
-        }
-        a {
-            background: #5865F2;
-            color: white;
-            padding: 20px 40px;
-            text-decoration: none;
-            font-size: 20px;
-            border-radius: 10px;
-        }
-    </style>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000000; /* negro */
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.login-box {
+    background-color: #111; /* gris casi negro para la caja */
+    padding: 40px;
+    border-radius: 12px;
+    max-width: 400px;
+    margin: 120px auto;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background: #5865F2;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+</style>
 </head>
 <body>
 
-<a href="/login">Iniciar sesión con Discord</a>
+<div class="login-box">
+    <h2>Iniciar sesión</h2>
+    <a href="/login">
+        <button>Iniciar sesión con Discord</button>
+    </a>
+</div>
 
 </body>
 </html>
